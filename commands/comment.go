@@ -10,12 +10,13 @@ import (
 
 	"github.com/codegangsta/cli"
 
-	"github.com/memerelics/asana/api"
-	"github.com/memerelics/asana/utils"
+	"asana/api"
+	"asana/cache"
+	"asana/utils"
 )
 
 func Comment(c *cli.Context) {
-	taskId := api.FindTaskId(c.Args().First(), false)
+	taskId := cache.FindId("task", c.Args().First(), false)
 	task, stories := api.Task(taskId, true)
 
 	tmpFile := os.TempDir() + "/asana_comment.txt"

@@ -11,10 +11,6 @@ import (
 	"time"
 )
 
-const (
-	CacheFileName = ".asana.cache"
-)
-
 func Home() string {
 	current, err := user.Current()
 	Check(err)
@@ -46,10 +42,6 @@ func Older(duration string, cacheFile string) bool {
 	return time.Now().After(st.ModTime().Add(d))
 }
 
-func CacheFile() string {
-	return Home() + "/" + CacheFileName
-}
-
 // base: github.com/github/hub
 func BrowserLauncher() (string, error) {
 	browser := os.Getenv("BROWSER")
@@ -72,7 +64,7 @@ func searchBrowserLauncher(goos string) (browser string) {
 		browser = "cmd /c start"
 	default:
 		candidates := []string{"xdg-open", "cygstart", "x-www-browser", "firefox",
-		"opera", "mozilla", "netscape"}
+			"opera", "mozilla", "netscape"}
 		for _, b := range candidates {
 			path, err := exec.LookPath(b)
 			if err == nil {

@@ -1,14 +1,12 @@
 package commands
 
 import (
-	"fmt"
-
 	"github.com/codegangsta/cli"
 
-	"github.com/memerelics/asana/api"
+	"asana/api"
+	"asana/cache"
 )
 
 func Done(c *cli.Context) {
-	task := api.Update(api.FindTaskId(c.Args().First(), false), "completed", "true")
-	fmt.Println("DONE! : " + task.Name)
+	api.Update(cache.FindId("task", c.Args().First(), false), "completed", "true")
 }

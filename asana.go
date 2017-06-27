@@ -5,7 +5,7 @@ import (
 
 	"github.com/codegangsta/cli"
 
-	"github.com/memerelics/asana/commands"
+	"asana/commands"
 )
 
 func main() {
@@ -21,9 +21,8 @@ func main() {
 func defs() []cli.Command {
 	return []cli.Command{
 		{
-			Name:      "config",
-			ShortName: "c",
-			Usage:     "Asana configuration. Your settings will be saved in ~/.asana.yml",
+			Name:  "config",
+			Usage: "Asana configuration. Your settings will be saved in ~/.asana/config.yml",
 			Action: func(c *cli.Context) {
 				commands.Config(c)
 			},
@@ -31,15 +30,39 @@ func defs() []cli.Command {
 		{
 			Name:      "workspaces",
 			ShortName: "w",
-			Usage:     "get workspaces",
+			Usage:     "Get workspaces",
 			Action: func(c *cli.Context) {
 				commands.Workspaces(c)
 			},
 		},
 		{
+			Name:      "projects",
+			ShortName: "ps",
+			Usage:     "Get projects",
+			Flags: []cli.Flag{
+				cli.BoolFlag{Name: "no-cache, n", Usage: "without cache"},
+				cli.BoolFlag{Name: "refresh, r", Usage: "update cache"},
+			},
+			Action: func(c *cli.Context) {
+				commands.Projects(c)
+			},
+		},
+		{
+			Name:      "users",
+			ShortName: "u",
+			Usage:     "Get users",
+			Flags: []cli.Flag{
+				cli.BoolFlag{Name: "no-cache, n", Usage: "without cache"},
+				cli.BoolFlag{Name: "refresh, r", Usage: "update cache"},
+			},
+			Action: func(c *cli.Context) {
+				commands.Users(c)
+			},
+		},
+		{
 			Name:      "tasks",
 			ShortName: "ts",
-			Usage:     "get tasks",
+			Usage:     "Get tasks",
 			Flags: []cli.Flag{
 				cli.BoolFlag{Name: "no-cache, n", Usage: "without cache"},
 				cli.BoolFlag{Name: "refresh, r", Usage: "update cache"},
@@ -51,12 +74,20 @@ func defs() []cli.Command {
 		{
 			Name:      "task",
 			ShortName: "t",
-			Usage:     "get a task",
+			Usage:     "Get a task",
 			Flags: []cli.Flag{
 				cli.BoolFlag{Name: "verbose, v", Usage: "verbose output"},
 			},
 			Action: func(c *cli.Context) {
 				commands.Task(c)
+			},
+		},
+		{
+			Name:      "create",
+			ShortName: "c",
+			Usage:     "Create a task",
+			Action: func(c *cli.Context) {
+				commands.Create(c)
 			},
 		},
 		{
@@ -68,23 +99,46 @@ func defs() []cli.Command {
 			},
 		},
 		{
-			Name:      "done",
-			Usage:     "Complete task",
+			Name:      "attach",
+			ShortName: "a",
+			Usage:     "Attach file",
+			Action: func(c *cli.Context) {
+				commands.Attach(c)
+			},
+		},
+		{
+			Name:      "assignee",
+			ShortName: "as",
+			Usage:     "Assignee task to user",
+			Action: func(c *cli.Context) {
+				commands.Assignee(c)
+			},
+		},
+		{
+			Name:  "done",
+			Usage: "Complete task",
 			Action: func(c *cli.Context) {
 				commands.Done(c)
 			},
 		},
 		{
 			Name:  "due",
-			Usage: "set due date",
+			Usage: "Set due date",
 			Action: func(c *cli.Context) {
 				commands.DueOn(c)
 			},
 		},
 		{
-			Name:  "browse",
+			Name:  "delete",
+			Usage: "Delete task",
+			Action: func(c *cli.Context) {
+				commands.Delete(c)
+			},
+		},
+		{
+			Name:      "browse",
 			ShortName: "b",
-			Usage: "open a task in the web browser",
+			Usage:     "Open a task in the web browser",
 			Action: func(c *cli.Context) {
 				commands.Browse(c)
 			},

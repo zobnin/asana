@@ -1,18 +1,18 @@
 package commands
 
 import (
-	"strconv"
 	"os/exec"
+	"strconv"
 
-    "github.com/codegangsta/cli"
+	"github.com/codegangsta/cli"
 
-	"github.com/memerelics/asana/api"
-	"github.com/memerelics/asana/config"
-	"github.com/memerelics/asana/utils"
+	"asana/cache"
+	"asana/config"
+	"asana/utils"
 )
 
 func Browse(c *cli.Context) {
-	taskId := api.FindTaskId(c.Args().First(), true)
+	taskId := cache.FindId("task", c.Args().First(), true)
 	url := "https://app.asana.com/0/" + strconv.Itoa(config.Load().Workspace) + "/" + taskId
 	launcher, err := utils.BrowserLauncher()
 	utils.Check(err)

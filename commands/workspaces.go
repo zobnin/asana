@@ -3,7 +3,8 @@ package commands
 import (
 	"fmt"
 	"github.com/codegangsta/cli"
-	"github.com/memerelics/asana/api"
+
+    "asana/api"
 )
 
 func Workspaces(c *cli.Context) {

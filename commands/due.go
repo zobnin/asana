@@ -7,7 +7,8 @@ import (
 
 	"github.com/codegangsta/cli"
 
-	"github.com/memerelics/asana/api"
+	"asana/api"
+	"asana/cache"
 )
 
 const (
@@ -15,7 +16,7 @@ const (
 )
 
 func DueOn(c *cli.Context) {
-	taskId := api.FindTaskId(c.Args().First(), true)
+	taskId := cache.FindId("task", c.Args().First(), true)
 	task := api.Update(taskId, "due_on", toDate(c.Args()[1]))
 	fmt.Println("set due on [ " + task.Due_on + " ] :" + task.Name)
 }

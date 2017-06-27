@@ -3,15 +3,12 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"net/url"
-	"regexp"
 	"sort"
 	"strconv"
 
-	"github.com/memerelics/asana/config"
-	"github.com/memerelics/asana/utils"
+	"asana/config"
+	"asana/utils"
 )
 
 type Task_t struct {
@@ -29,7 +26,7 @@ type Task_t struct {
 	Workspace       Base
 	Parent          string
 	Projects        []Base
-	Folloers        []Base
+	Followers       []Base
 }
 
 type Story_t struct {
@@ -47,13 +44,16 @@ func (a ByDue) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByDue) Less(i, j int) bool { return a[i].Due_on < a[j].Due_on }
 
 func Tasks(params url.Values, withCompleted bool) []Task_t {
+	var tasks map[string][]Task_t
+	var tasks_without_due, tasks_with_due []Task_t
+
 	params.Add("workspace", strconv.Itoa(config.Load().Workspace))
 	params.Add("assignee", "me")
 	params.Add("opt_fields", "name,completed,due_on")
-	var tasks map[string][]Task_t
+
 	err := json.Unmarshal(Get("/api/1.0/tasks", params), &tasks)
 	utils.Check(err)
-	var tasks_without_due, tasks_with_due []Task_t
+
 	for _, t := range tasks["data"] {
 		if !withCompleted && t.Completed {
 			continue
@@ -75,6 +75,7 @@ func Task(taskId string, verbose bool) (Task_t, []Story_t) {
 		ss      map[string][]Story_t
 		stories []Story_t
 	)
+
 	task_chan, stories_chan := make(chan []byte), make(chan []byte)
 	go func() {
 		task_chan <- Get("/api/1.0/tasks/"+taskId, nil)
@@ -95,35 +96,6 @@ func Task(taskId string, verbose bool) (Task_t, []Story_t) {
 	return t["data"], stories
 }
 
-func FindTaskId(index string, autoFirst bool) string {
-	if index == "" {
-		if autoFirst == false {
-			log.Fatal("fatal: Task index is required.")
-		} else {
-			index = "0"
-		}
-	}
-
-	var id string
-	txt, err := ioutil.ReadFile(utils.CacheFile())
-
-	if err != nil { // cache file not exist
-		ind, parseErr := strconv.Atoi(index)
-		utils.Check(parseErr)
-		task := Tasks(url.Values{}, false)[ind]
-		id = strconv.Itoa(task.Id)
-	} else {
-		lines := regexp.MustCompile("\n").Split(string(txt), -1)
-		for i, line := range lines {
-			if index == strconv.Itoa(i) {
-				line = regexp.MustCompile("^[0-9]*:").ReplaceAllString(line, "") // remove index
-				id = regexp.MustCompile("^[0-9]*").FindString(line)
-			}
-		}
-	}
-	return id
-}
-
 func (s Story_t) String() string {
 	if s.Type == "comment" {
 		return fmt.Sprintf("> %s\nby %s (%s)", s.Text, s.Created_by.Name, s.Created_at)
@@ -137,7 +109,6 @@ type Commented_t struct {
 }
 
 func CommentTo(taskId string, comment string) string {
-
 	respBody := Post("/tasks/"+taskId+"/stories", `{"data":{"text":"`+comment+`"}}`)
 
 	var output map[string]Commented_t
@@ -145,6 +116,17 @@ func CommentTo(taskId string, comment string) string {
 	utils.Check(err)
 
 	return output["data"].Text
+}
+
+const newTaskFields = `"assignee":"me"`
+
+func CreateTask(name string) {
+	ws := strconv.Itoa(config.Load().Workspace)
+	Post("/tasks", `{"data":{"name":"`+name+`","workspace":"`+ws+`",`+newTaskFields+`}}`)
+}
+
+func DeleteTask(taskId string) {
+	Delete("/tasks/" + taskId)
 }
 
 func Update(taskId string, key string, value string) Task_t {
@@ -155,4 +137,8 @@ func Update(taskId string, key string, value string) Task_t {
 	utils.Check(err)
 
 	return output["data"]
+}
+
+func Attach(taskId string, file string) {
+	Upload("/tasks/"+taskId+"/attachments", file)
 }
